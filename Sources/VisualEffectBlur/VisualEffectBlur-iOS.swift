@@ -12,33 +12,31 @@ import SwiftUI
 
 #if os(iOS)
 public struct VisualEffectBlur<Content: View>: View {
-    /// Defaults to .systemMaterial
-    var blurStyle: UIBlurEffect.Style
+    private let blurStyle: UIBlurEffect.Style
+    private let vibrancyStyle: UIVibrancyEffectStyle?
+    private let content: () -> Content
 
-    /// Defaults to nil
-    var vibrancyStyle: UIVibrancyEffectStyle?
-
-    var content: Content
-
-    public init(blurStyle: UIBlurEffect.Style = .systemMaterial, vibrancyStyle: UIVibrancyEffectStyle? = nil, @ViewBuilder content: () -> Content) {
+    public init(
+        blurStyle: UIBlurEffect.Style = .systemMaterial,
+        vibrancyStyle: UIVibrancyEffectStyle? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
         self.blurStyle = blurStyle
         self.vibrancyStyle = vibrancyStyle
-        self.content = content()
+        self.content = content
     }
 
     public var body: some View {
-        Representable(blurStyle: blurStyle, vibrancyStyle: vibrancyStyle, content: ZStack { content })
+        Representable(blurStyle: blurStyle, vibrancyStyle: vibrancyStyle, content: ZStack { content() })
             .accessibility(hidden: Content.self == EmptyView.self)
     }
 }
 
-// MARK: - Representable
-
 extension VisualEffectBlur {
     struct Representable<Content: View>: UIViewRepresentable {
-        var blurStyle: UIBlurEffect.Style
-        var vibrancyStyle: UIVibrancyEffectStyle?
-        var content: Content
+        let blurStyle: UIBlurEffect.Style
+        let vibrancyStyle: UIVibrancyEffectStyle?
+        let content: Content
 
         func makeUIView(context: Context) -> UIVisualEffectView {
             context.coordinator.blurView
@@ -54,13 +52,11 @@ extension VisualEffectBlur {
     }
 }
 
-// MARK: - Coordinator
-
 extension VisualEffectBlur.Representable {
-    class Coordinator {
+    final class Coordinator {
         let blurView = UIVisualEffectView()
-        let vibrancyView = UIVisualEffectView()
-        let hostingController: UIHostingController<Content>
+        private let vibrancyView = UIVisualEffectView()
+        private let hostingController: UIHostingController<Content>
 
         init(content: Content) {
             hostingController = UIHostingController(rootView: content)
@@ -79,21 +75,15 @@ extension VisualEffectBlur.Representable {
             let blurEffect = UIBlurEffect(style: blurStyle)
             blurView.effect = blurEffect
 
-            if let vibrancyStyle = vibrancyStyle {
-                vibrancyView.effect = UIVibrancyEffect(blurEffect: blurEffect, style: vibrancyStyle)
-            } else {
-                vibrancyView.effect = nil
-            }
+            vibrancyView.effect = vibrancyStyle.map { UIVibrancyEffect(blurEffect: blurEffect, style: $0) }
 
             hostingController.view.setNeedsDisplay()
         }
     }
 }
 
-// MARK: - Content-less Initializer
-
-public extension VisualEffectBlur where Content == EmptyView {
-    init(blurStyle: UIBlurEffect.Style = .systemMaterial) {
+extension VisualEffectBlur where Content == EmptyView {
+    public init(blurStyle: UIBlurEffect.Style = .systemMaterial) {
         self.init(blurStyle: blurStyle, vibrancyStyle: nil) {
             EmptyView()
         }
