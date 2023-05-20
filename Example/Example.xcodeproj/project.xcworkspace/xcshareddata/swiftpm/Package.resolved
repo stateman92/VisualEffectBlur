@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "visualeffectblur",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stateman92/VisualEffectBlur",
+      "state" : {
+        "revision" : "d456bb77f5cdd9b75f64c6dfc72b929bd24741f6",
+        "version" : "1.0.6"
+      }
+    }
+  ],
+  "version" : 2
+}
