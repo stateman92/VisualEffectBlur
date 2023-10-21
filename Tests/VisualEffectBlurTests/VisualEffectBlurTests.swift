@@ -1,5 +1,5 @@
 import XCTest
-@testable import VibrancyEffectView
+@testable import VisualEffectBlur
 
 final class VisualEffectBlurTests: XCTestCase {
     func testExample() throws {

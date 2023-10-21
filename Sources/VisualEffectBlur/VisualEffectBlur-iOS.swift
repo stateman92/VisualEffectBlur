@@ -33,10 +33,10 @@ public struct VisualEffectBlur<Content: View>: View {
 }
 
 extension VisualEffectBlur {
-    struct Representable<Content: View>: UIViewRepresentable {
+    struct Representable<RepresentableContent: View>: UIViewRepresentable {
         let blurStyle: UIBlurEffect.Style
         let vibrancyStyle: UIVibrancyEffectStyle?
-        let content: Content
+        let content: RepresentableContent
 
         func makeUIView(context: Context) -> UIVisualEffectView {
             context.coordinator.blurView
@@ -56,20 +56,20 @@ extension VisualEffectBlur.Representable {
     final class Coordinator {
         let blurView = UIVisualEffectView()
         private let vibrancyView = UIVisualEffectView()
-        private let hostingController: UIHostingController<Content>
+        private let hostingController: UIHostingController<RepresentableContent>
 
-        init(content: Content) {
+        init(content: RepresentableContent) {
             hostingController = UIHostingController(rootView: content)
             hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             hostingController.view.backgroundColor = nil
             blurView.contentView.addSubview(vibrancyView)
-            
+
             blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             vibrancyView.contentView.addSubview(hostingController.view)
             vibrancyView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         }
 
-        func update(content: Content, blurStyle: UIBlurEffect.Style, vibrancyStyle: UIVibrancyEffectStyle?) {
+        func update(content: RepresentableContent, blurStyle: UIBlurEffect.Style, vibrancyStyle: UIVibrancyEffectStyle?) {
             hostingController.rootView = content
 
             let blurEffect = UIBlurEffect(style: blurStyle)
